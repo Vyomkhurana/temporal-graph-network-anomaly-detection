@@ -1,6 +1,10 @@
-# Core ML and Deep Learning
-torch>=2.0.0
-torch-geometric>=2.3.0
+# Core ML and Deep Learning (CUDA 12.1+ compatible with CUDA 13.1)
+torch>=2.2.0
+torchvision>=0.17.0
+torchaudio>=2.2.0
+torch-geometric>=2.5.0
+torch-scatter>=2.1.0
+torch-sparse>=0.6.0
 
 # Graph Processing
 networkx>=3.0
