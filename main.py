@@ -16,6 +16,9 @@ import argparse
 import sys
 from pathlib import Path
 
+from src.utils.config import load_config
+from src.utils.logger import setup_logger, get_logger
+
 
 def main():
     """
@@ -50,50 +53,59 @@ def main():
     
     args = parser.parse_args()
     
+    # Setup logging
+    setup_logger(log_level="INFO")
+    logger = get_logger()
+    
     # Display welcome message
-    print("=" * 70)
-    print("Temporal Graph Network - Lateral Movement Detection System")
-    print("=" * 70)
-    print(f"Mode: {args.mode}")
-    print(f"Config: {args.config}")
-    print(f"Data directory: {args.data}")
-    print("=" * 70)
-    print()
+    logger.info("=" * 70)
+    logger.info("Temporal Graph Network - Lateral Movement Detection System")
+    logger.info("=" * 70)
+    logger.info(f"Mode: {args.mode}")
+    logger.info(f"Config: {args.config}")
+    logger.info(f"Data directory: {args.data}")
+    logger.info("=" * 70)
+    
+    # Load configuration
+    try:
+        config = load_config(args.config)
+        logger.info(f"Configuration loaded successfully from: {args.config}")
+        logger.info(f"Device: {config.get('system.device', 'cpu')}")
+    except FileNotFoundError as e:
+        logger.warning(f"Config file not found: {args.config}")
+        logger.warning("Proceeding with default settings")
+        config = None
     
     # Validate paths
     config_path = Path(args.config)
     data_path = Path(args.data)
     
     if not data_path.exists():
-        print(f"Warning: Data directory '{data_path}' does not exist.")
-        print("Please generate or provide network traffic data first.")
-    
-    if not config_path.exists():
-        print(f"Warning: Config file '{config_path}' does not exist.")
-        print("Using default settings.")
+        logger.warning(f"Data directory '{data_path}' does not exist.")
+        logger.warning("Please generate or provide network traffic data first.")
     
     # Execute based on mode
     if args.mode == "train":
-        print("Training mode selected...")
-        print("Training pipeline not yet implemented.")
-        print("Coming soon in the next development phase!")
+        logger.info("Training mode selected...")
+        logger.warning("Training pipeline not yet implemented.")
+        logger.info("Coming soon in the next development phase!")
         
     elif args.mode == "infer":
-        print("Inference mode selected...")
-        print("Inference pipeline not yet implemented.")
-        print("Coming soon in the next development phase!")
+        logger.info("Inference mode selected...")
+        logger.warning("Inference pipeline not yet implemented.")
+        logger.info("Coming soon in the next development phase!")
         
     elif args.mode == "dashboard":
-        print("Dashboard mode selected...")
-        print("Streamlit dashboard not yet implemented.")
-        print("Coming soon in the next development phase!")
-        print()
-        print("To launch dashboard (when ready), run:")
-        print("  streamlit run dashboard/app.py")
+        logger.info("Dashboard mode selected...")
+        logger.warning("Streamlit dashboard not yet implemented.")
+        logger.info("Coming soon in the next development phase!")
+        logger.info("")
+        logger.info("To launch dashboard (when ready), run:")
+        logger.info("  streamlit run dashboard/app.py")
     
-    print()
-    print("Project initialization complete!")
-    print("Next steps: Generate synthetic data and build graph representation.")
+    logger.info("")
+    logger.success("Project initialization complete!")
+    logger.info("Next steps: Generate synthetic data and build graph representation.")
     return 0
 
 
