@@ -1,0 +1,52 @@
+# =============================================================================
+# Temporal Graph Network - Configuration File
+# =============================================================================
+# This file will be populated with your specific parameters as we build the system.
+# Currently contains placeholders - DO NOT USE YET.
+#
+# You will provide specifications for:
+# - Network topology (machines, users, IPs)
+# - Data sources and formats
+# - Model hyperparameters
+# - Training settings
+# =============================================================================
+
+# System Configuration
+system:
+  device: "cuda"  # Your RTX 4050 GPU
+  cuda_version: "13.1"
+  seed: 42  # For reproducibility
+  num_workers: 4  # Data loading workers
+
+# Project Paths
+paths:
+  data_dir: "data"
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  synthetic_data: "data/synthetic"
+  models_dir: "models"
+  logs_dir: "logs"
+  checkpoints_dir: "checkpoints"
+
+# Data Configuration (TO BE SPECIFIED BY USER)
+data:
+  source: null  # Options: "real", "synthetic", "public_dataset"
+  format: null  # Will be specified based on your data source
+  
+  # These will be filled when you provide specifications
+  # network_topology: null
+  # time_window: null
+  # features: null
+
+# Model Configuration (TO BE SPECIFIED LATER)
+model:
+  name: "TGN"  # Temporal Graph Network
+  # Hyperparameters will be added as we build the model
+  
+# Training Configuration (TO BE SPECIFIED LATER)
+training:
+  # Will be populated during training phase
+  
+# Inference Configuration (TO BE SPECIFIED LATER)
+inference:
+  # Will be populated during inference phase
