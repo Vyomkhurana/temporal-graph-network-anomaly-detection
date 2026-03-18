@@ -44,12 +44,21 @@ env/
 data/raw/*.csv
 data/raw/*.json
 data/raw/*.parquet
+data/raw/**/*.csv
+data/raw/**/*.json
+data/raw/**/*.parquet
 data/processed/*.csv
 data/processed/*.json
 data/processed/*.parquet
+data/processed/**/*.csv
+data/processed/**/*.json
+data/processed/**/*.parquet
 data/synthetic/*.csv
 data/synthetic/*.json
 data/synthetic/*.parquet
+data/synthetic/**/*.csv
+data/synthetic/**/*.json
+data/synthetic/**/*.parquet
 
 # Model artifacts
 *.pth
