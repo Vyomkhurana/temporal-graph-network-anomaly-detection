@@ -1,0 +1,25 @@
+# Optional external service toggles.
+# Keep each service disabled until credentials are provided.
+
+mlflow:
+  enabled: false
+  tracking_uri: null
+  experiment_name: null
+
+kafka:
+  enabled: false
+  bootstrap_servers: null
+  topic_events: null
+  security_protocol: null
+  sasl_mechanism: null
+
+storage:
+  enabled: false
+  provider: null          # aws | azure | gcp
+  bucket_or_container: null
+  region: null
+
+alerting:
+  enabled: false
+  provider: null          # slack | webhook | email
+  endpoint: null

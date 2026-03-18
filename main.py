@@ -18,6 +18,11 @@ from pathlib import Path
 
 from src.utils.config import load_config
 from src.utils.logger import setup_logger, get_logger
+from src.utils.service_config import (
+    ServiceConfigError,
+    load_services_config,
+    validate_enabled_services,
+)
 
 
 def main():
@@ -75,6 +80,17 @@ def main():
         logger.warning(f"Config file not found: {args.config}")
         logger.warning("Proceeding with default settings")
         config = None
+
+    # Load and validate optional service connections only if enabled
+    try:
+        services_config = load_services_config("configs/services.yaml")
+        validate_enabled_services(services_config)
+        logger.info("Service configuration loaded successfully")
+    except ServiceConfigError as exc:
+        logger.warning(f"Service configuration issue: {exc}")
+        logger.warning("Continuing with local-only execution")
+    except FileNotFoundError:
+        logger.warning("Service config file missing; continuing with local-only execution")
     
     # Validate paths
     config_path = Path(args.config)
