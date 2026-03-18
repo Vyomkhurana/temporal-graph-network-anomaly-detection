@@ -1,0 +1,43 @@
+# Dataset Contract for Network Events
+# Fill this file with your real dataset details before ingestion starts.
+
+metadata:
+  dataset_name: null
+  source_owner: null
+  format: null            # csv | parquet | jsonl
+  timezone: null          # e.g., UTC
+  time_unit: null         # s | ms | us | ns
+
+paths:
+  train_file: null
+  validation_file: null
+  test_file: null
+
+schema:
+  required_columns:
+    timestamp: null       # column name in your dataset
+    src_ip: null
+    dst_ip: null
+    src_user: null
+    dst_user: null
+    event_type: null
+    protocol: null
+
+  optional_columns:
+    src_host: null
+    dst_host: null
+    src_port: null
+    dst_port: null
+    bytes_sent: null
+    bytes_received: null
+    auth_result: null
+    session_id: null
+
+labels:
+  label_column: null      # optional for supervised setup
+  positive_class: null    # e.g., anomaly
+
+privacy:
+  contains_pii: null
+  masking_required: null
+  approved_for_training: null
