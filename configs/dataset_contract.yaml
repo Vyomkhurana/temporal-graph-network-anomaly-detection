@@ -2,16 +2,17 @@
 # Fill this file with your real dataset details before ingestion starts.
 
 metadata:
-  dataset_name: null
-  source_owner: null
-  format: null            # csv | parquet | jsonl
-  timezone: null          # e.g., UTC
-  time_unit: null         # s | ms | us | ns
+  dataset_name: UNSW-NB15
+  source_owner: UNSW Canberra Cyber
+  format: csv            # csv | parquet | jsonl
+  timezone: UTC          # e.g., UTC
+  time_unit: s           # s | ms | us | ns
+  has_header: false
 
 paths:
-  train_file: null
-  validation_file: null
-  test_file: null
+  train_file: data/raw/unsw_nb15/UNSW-NB15_1.csv
+  validation_file: data/raw/unsw_nb15/UNSW-NB15_2.csv
+  test_file: data/raw/unsw_nb15/UNSW-NB15_3.csv
 
 schema:
   required_columns:
