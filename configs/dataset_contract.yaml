@@ -15,28 +15,29 @@ paths:
   test_file: data/raw/unsw_nb15/UNSW-NB15_3.csv
 
 schema:
+  column_names_file: configs/unsw_nb15_columns.txt
   required_columns:
-    timestamp: null       # column name in your dataset
-    src_ip: null
-    dst_ip: null
+    timestamp: Stime       # column name in your dataset
+    src_ip: srcip
+    dst_ip: dstip
     src_user: null
     dst_user: null
-    event_type: null
-    protocol: null
+    event_type: state
+    protocol: proto
 
   optional_columns:
     src_host: null
     dst_host: null
-    src_port: null
-    dst_port: null
-    bytes_sent: null
-    bytes_received: null
+    src_port: sport
+    dst_port: dsport
+    bytes_sent: sbytes
+    bytes_received: dbytes
     auth_result: null
     session_id: null
 
 labels:
-  label_column: null      # optional for supervised setup
-  positive_class: null    # e.g., anomaly
+  label_column: label      # optional for supervised setup
+  positive_class: 1        # e.g., anomaly
 
 privacy:
   contains_pii: null
