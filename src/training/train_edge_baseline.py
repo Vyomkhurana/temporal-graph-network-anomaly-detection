@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 from typing import Tuple
 
 import numpy as np
 import pandas as pd
 import torch
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, roc_auc_score
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from src.model import EdgeBaselineMLP
+from src.training.evaluation import format_metrics, select_best_threshold
 
 FEATURE_COLUMNS = [
     "edge_event_count",
@@ -55,7 +56,7 @@ def _to_loader(x: np.ndarray, y: np.ndarray, batch_size: int, shuffle: bool) -> 
     return DataLoader(ds, batch_size=batch_size, shuffle=shuffle)
 
 
-def _evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> dict:
+def _predict_probs(model: nn.Module, loader: DataLoader, device: torch.device) -> Tuple[np.ndarray, np.ndarray]:
     model.eval()
     all_probs = []
     all_labels = []
@@ -67,27 +68,14 @@ def _evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> dic
             all_probs.append(probs)
             all_labels.append(labels.numpy())
 
-    y_prob = np.concatenate(all_probs)
-    y_true = np.concatenate(all_labels)
-    y_pred = (y_prob >= 0.5).astype(int)
+    return np.concatenate(all_labels), np.concatenate(all_probs)
 
-    precision, recall, f1, _ = precision_recall_fscore_support(
-        y_true, y_pred, average="binary", zero_division=0
-    )
 
-    metrics = {
-        "accuracy": float(accuracy_score(y_true, y_pred)),
-        "precision": float(precision),
-        "recall": float(recall),
-        "f1": float(f1),
-    }
-
-    if len(np.unique(y_true)) > 1:
-        metrics["auc"] = float(roc_auc_score(y_true, y_prob))
-    else:
-        metrics["auc"] = float("nan")
-
-    return metrics
+def _save_metrics(metrics: dict, output_path: str = "data/processed/metrics/baseline_metrics.json") -> Path:
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+    return path
 
 
 def train_baseline(
@@ -133,10 +121,15 @@ def train_baseline(
         avg_loss = running_loss / max(1, len(train_loader))
         print(f"Epoch {epoch}/{epochs} - train_loss: {avg_loss:.6f}")
 
-    val_metrics = _evaluate(model, val_loader, dev)
+    y_true, y_prob = _predict_probs(model, val_loader, dev)
+    best_threshold, val_metrics = select_best_threshold(y_true, y_prob)
+    val_metrics["best_threshold"] = float(best_threshold)
+
     print("Validation metrics:")
-    for key, value in val_metrics.items():
-        print(f"- {key}: {value:.6f}" if not np.isnan(value) else f"- {key}: nan")
+    print(format_metrics(val_metrics))
+
+    metrics_path = _save_metrics(val_metrics)
+    print(f"Metrics saved to: {metrics_path}")
 
     return val_metrics
 

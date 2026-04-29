@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -45,15 +46,27 @@ def run_sanity_check(input_path: str = "data/processed/unsw_nb15_pyg_edges.csv")
     return summary
 
 
+def save_summary(summary: dict, output_path: str) -> Path:
+    """Persist sanity-check metrics for later inspection."""
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    return path
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run graph sanity check")
     parser.add_argument("--input", default="data/processed/unsw_nb15_pyg_edges.csv")
+    parser.add_argument("--output", default="data/processed/graph_sanity_summary.json")
     args = parser.parse_args()
 
     summary = run_sanity_check(args.input)
     print("Graph sanity summary:")
     for key, value in summary.items():
         print(f"- {key}: {value}")
+
+    output_path = save_summary(summary, args.output)
+    print(f"Summary saved to: {output_path}")
     return 0
 
 
