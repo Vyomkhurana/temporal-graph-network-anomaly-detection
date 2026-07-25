@@ -21,6 +21,8 @@ def run_full_pipeline(
     columns_path: str = "configs/unsw_nb15_columns.txt",
     device: str = "cuda",
     train_epochs: int = 5,
+    batch_size: int = 256,
+    learning_rate: float = 1e-3,
     time_window: str = "1h",
 ) -> dict:
     """Execute complete offline training and inference workflow."""
@@ -39,6 +41,8 @@ def run_full_pipeline(
         val_path=str(val_path),
         test_path=str(test_path),
         epochs=train_epochs,
+        batch_size=batch_size,
+        lr=learning_rate,
         device=device,
         model_output_path="models/edge_baseline.pt",
         metadata_output_path="models/edge_baseline_metadata.json",
@@ -82,6 +86,8 @@ def main() -> int:
     parser.add_argument("--columns", default="configs/unsw_nb15_columns.txt")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--batch-size", type=int, default=256)
+    parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--window", default="1h")
     args = parser.parse_args()
 
@@ -90,6 +96,8 @@ def main() -> int:
         columns_path=args.columns,
         device=args.device,
         train_epochs=args.epochs,
+        batch_size=args.batch_size,
+        learning_rate=args.lr,
         time_window=args.window,
     )
 
