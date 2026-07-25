@@ -28,25 +28,45 @@ paths:
   logs_dir: "logs"
   checkpoints_dir: "checkpoints"
 
-# Data Configuration (TO BE SPECIFIED BY USER)
+# Data Configuration
 data:
-  source: null  # Options: "real", "synthetic", "public_dataset"
-  format: null  # Will be specified based on your data source
-  
-  # These will be filled when you provide specifications
-  # network_topology: null
-  # time_window: null
-  # features: null
+  source: "real"  # Options: "real", "synthetic", "public_dataset"
+  format: "csv"
+  dataset_name: "UNSW-NB15"
+  time_window: "1h"
+  contract_path: "configs/dataset_contract.yaml"
+  columns_path: "configs/unsw_nb15_columns.txt"
 
-# Model Configuration (TO BE SPECIFIED LATER)
+# Model Configuration
 model:
-  name: "TGN"  # Temporal Graph Network
-  # Hyperparameters will be added as we build the model
+  name: "EdgeBaselineMLP"
+  input_features:
+    - edge_event_count
+    - anomaly_event_count
+    - total_bytes_sent
+    - total_bytes_received
+  hidden_dim: 32
+  dropout: 0.1
+  model_path: "models/edge_baseline.pt"
+  metadata_path: "models/edge_baseline_metadata.json"
   
-# Training Configuration (TO BE SPECIFIED LATER)
+# Training Configuration
 training:
-  # Will be populated during training phase
+  epochs: 5
+  batch_size: 512
+  learning_rate: 0.001
+  train_split_path: "data/processed/splits/train_edges.csv"
+  val_split_path: "data/processed/splits/val_edges.csv"
+  test_split_path: "data/processed/splits/test_edges.csv"
+  metrics_output: "data/processed/metrics/baseline_metrics.json"
   
-# Inference Configuration (TO BE SPECIFIED LATER)
+# Inference Configuration
 inference:
-  # Will be populated during inference phase
+  input_path: "data/processed/splits/test_edges.csv"
+  output_path: "data/processed/inference/scored_edges.csv"
+  threshold_override: null
+
+# Reporting
+reporting:
+  graph_sanity_summary: "data/processed/graph_sanity_summary.json"
+  pipeline_run_report: "data/processed/reports/pipeline_run_report.json"

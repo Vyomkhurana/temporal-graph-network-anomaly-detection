@@ -50,7 +50,7 @@ def normalize_unsw(contract_path: str, columns_path: str, output_path: str) -> P
 
     frames: List[pd.DataFrame] = []
     for file in files:
-        df = pd.read_csv(file, header=None, names=columns)
+        df = pd.read_csv(file, header=None, names=columns, low_memory=False)
         frames.append(_normalize_frame(df, source_file=file))
 
     result = pd.concat(frames, ignore_index=True)

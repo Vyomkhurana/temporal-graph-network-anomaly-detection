@@ -96,19 +96,86 @@ pip install -r requirements.txt
 
 ## Usage
 
-*Coming soon - project is under active development*
+### 1. Prepare Environment
 
-## Roadmap
+```bash
+python -m venv .venv
+# On Windows
+.venv\Scripts\activate
+# On Linux/Mac
+source .venv/bin/activate
 
-- [x] Initialize project structure
-- [ ] Generate synthetic network traffic data
-- [ ] Build temporal graph representation
-- [ ] Implement TGN model architecture
-- [ ] Create training pipeline
-- [ ] Develop inference system
-- [ ] Build Streamlit dashboard
-- [ ] Add real-time streaming capabilities
-- [ ] Containerize with Docker
+pip install -r requirements.txt
+```
+
+### 2. Provide Dataset Files
+
+Put these files into `data/raw/unsw_nb15/`:
+
+- `UNSW-NB15_1.csv`
+- `UNSW-NB15_2.csv`
+- `UNSW-NB15_3.csv`
+
+The default paths are already configured in `configs/dataset_contract.yaml`.
+
+### 3. Run Full Offline Pipeline
+
+```bash
+python main.py --mode train --epochs 5 --window 1h
+```
+
+This command will:
+
+1. Normalize raw UNSW data
+2. Build temporal graph edges
+3. Build node mapping
+4. Build PyG-ready edge tables
+5. Run graph sanity checks
+6. Create temporal train/val/test splits
+7. Train baseline anomaly model
+8. Save model, metadata, and metrics
+9. Score inference output for test split
+
+### 4. Run Inference Only
+
+```bash
+python main.py --mode infer
+```
+
+### 5. Launch Dashboard
+
+```bash
+streamlit run dashboard/app.py
+```
+
+### 6. Useful Direct Commands
+
+```bash
+# Graph sanity check
+python -m src.graph.run_graph_sanity_check --input data/processed/unsw_nb15_pyg_edges.csv
+
+# Baseline training module
+python -m src.training.train_edge_baseline --train data/processed/splits/train_edges.csv --val data/processed/splits/val_edges.csv --test data/processed/splits/test_edges.csv --epochs 5 --device cuda
+```
+
+## Implementation Status
+
+- [x] Project initialization and module structure
+- [x] Dataset contract and schema profiling
+- [x] UNSW-NB15 normalization pipeline
+- [x] Temporal graph edge construction
+- [x] Node mapping and PyG-ready edge index generation
+- [x] Graph sanity checker and JSON summary reporting
+- [x] Chronological train/val/test split builder
+- [x] Baseline edge anomaly model training
+- [x] Threshold optimization and metric persistence
+- [x] Model checkpoint and metadata persistence
+- [x] Inference scoring pipeline
+- [x] Streamlit operations dashboard
+- [x] End-to-end orchestrated offline pipeline
+- [ ] Temporal Graph Neural Network (TGN) model replacement for baseline
+- [ ] Real-time streaming ingestion (Kafka)
+- [ ] Containerized deployment and CI/CD
 
 ## Contributing
 

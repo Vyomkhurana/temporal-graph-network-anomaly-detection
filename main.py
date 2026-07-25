@@ -16,6 +16,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from src.inference import score_edges
+from src.pipeline import run_full_pipeline
 from src.utils.config import load_config
 from src.utils.logger import setup_logger, get_logger
 from src.utils.service_config import (
@@ -52,8 +54,22 @@ def main():
     parser.add_argument(
         "--data",
         type=str,
-        default="data/synthetic",
+        default="data/raw/unsw_nb15",
         help="Path to data directory",
+    )
+
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=5,
+        help="Training epochs for baseline model",
+    )
+
+    parser.add_argument(
+        "--window",
+        type=str,
+        default="1h",
+        help="Temporal aggregation window (e.g., 15min, 1h)",
     )
     
     args = parser.parse_args()
@@ -103,25 +119,51 @@ def main():
     # Execute based on mode
     if args.mode == "train":
         logger.info("Training mode selected...")
-        logger.warning("Training pipeline not yet implemented.")
-        logger.info("Coming soon in the next development phase!")
+        try:
+            report = run_full_pipeline(
+                contract_path="configs/dataset_contract.yaml",
+                columns_path="configs/unsw_nb15_columns.txt",
+                device=config.get("system.device", "cpu") if config else "cpu",
+                train_epochs=args.epochs,
+                time_window=args.window,
+            )
+            logger.success("Training pipeline finished successfully")
+            logger.info(f"Run report: {report['report_path']}")
+            logger.info(f"Inference output: {report['scored_inference_path']}")
+        except Exception as exc:
+            logger.error(f"Training pipeline failed: {exc}")
+            return 1
         
     elif args.mode == "infer":
         logger.info("Inference mode selected...")
-        logger.warning("Inference pipeline not yet implemented.")
-        logger.info("Coming soon in the next development phase!")
+        try:
+            output = score_edges(
+                input_path="data/processed/splits/test_edges.csv",
+                model_path="models/edge_baseline.pt",
+                metadata_path="models/edge_baseline_metadata.json",
+                output_path="data/processed/inference/scored_edges.csv",
+                device=config.get("system.device", "cpu") if config else "cpu",
+            )
+            logger.success("Inference completed successfully")
+            logger.info(f"Scored output: {output}")
+        except Exception as exc:
+            logger.error(f"Inference failed: {exc}")
+            logger.info("Train first using: python main.py --mode train")
+            return 1
         
     elif args.mode == "dashboard":
         logger.info("Dashboard mode selected...")
-        logger.warning("Streamlit dashboard not yet implemented.")
-        logger.info("Coming soon in the next development phase!")
-        logger.info("")
-        logger.info("To launch dashboard (when ready), run:")
+        dashboard_path = Path("dashboard/app.py")
+        if dashboard_path.exists():
+            logger.info("To launch dashboard, run:")
+        else:
+            logger.warning("Dashboard app file not found.")
+            logger.info("Create dashboard app at dashboard/app.py then run:")
         logger.info("  streamlit run dashboard/app.py")
     
     logger.info("")
-    logger.success("Project initialization complete!")
-    logger.info("Next steps: Generate synthetic data and build graph representation.")
+    logger.success("Execution completed.")
+    logger.info("Use --mode train to refresh model artifacts and --mode infer to score new edge batches.")
     return 0
 
 
