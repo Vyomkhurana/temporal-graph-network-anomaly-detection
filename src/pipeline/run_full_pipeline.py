@@ -74,9 +74,8 @@ def run_full_pipeline(
 
     report_path = Path("data/processed/reports/pipeline_run_report.json")
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-
     report["report_path"] = str(report_path)
+    report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
 
 

@@ -36,6 +36,12 @@ def _fmt_float(value: object, digits: int = 4) -> str:
         return "n/a"
 
 
+def _display_value(value: object) -> str:
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, indent=2, default=str)
+    return str(value)
+
+
 graph_summary = _load_json("data/processed/graph_sanity_summary.json")
 metrics = _load_json("data/processed/metrics/baseline_metrics.json")
 pipeline_report = _load_json("data/processed/reports/pipeline_run_report.json")
@@ -98,12 +104,12 @@ with left_col:
     if pipeline_report:
         report_frame = pd.DataFrame(
             [
-                {"artifact": key, "value": value}
+                {"artifact": key, "value": _display_value(value)}
                 for key, value in pipeline_report.items()
                 if key != "metrics"
             ]
         )
-        st.dataframe(report_frame, use_container_width=True, height=260)
+        st.dataframe(report_frame, width="stretch", height=260)
     else:
         st.info("Run the pipeline to populate the artifact snapshot.")
 
@@ -116,7 +122,7 @@ with left_col:
                     {"split": split_name, "metric": metric_name, "value": metric_value}
                 )
         metric_frame = pd.DataFrame(metric_rows)
-        st.dataframe(metric_frame, use_container_width=True, height=240)
+        st.dataframe(metric_frame, width="stretch", height=240)
 
         chart_source = metric_frame[metric_frame["metric"].isin(["auc", "f1", "precision", "recall"])]
         if not chart_source.empty:
@@ -141,7 +147,7 @@ with right_col:
         )
         min_prob = st.slider("Minimum anomaly probability", 0.0, 1.0, threshold, 0.01)
         display_rows = ranked[ranked["anomaly_probability"] >= min_prob].head(200)
-        st.dataframe(display_rows, use_container_width=True, height=360)
+        st.dataframe(display_rows, width="stretch", height=360)
 
         if not display_rows.empty:
             score_fig = px.histogram(

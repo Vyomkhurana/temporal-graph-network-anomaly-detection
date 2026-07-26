@@ -121,7 +121,7 @@ The default paths are already configured in `configs/dataset_contract.yaml`.
 ### 3. Run Full Offline Pipeline
 
 ```bash
-python main.py --mode train --epochs 5 --window 1h
+python -m src.pipeline.run_full_pipeline --epochs 5 --batch-size 512 --device cuda
 ```
 
 This command will:
@@ -145,7 +145,7 @@ python main.py --mode infer
 ### 5. Launch Dashboard
 
 ```bash
-streamlit run dashboard/app.py
+python main.py --mode dashboard
 ```
 
 ### 6. Useful Direct Commands
@@ -156,6 +156,12 @@ python -m src.graph.run_graph_sanity_check --input data/processed/unsw_nb15_pyg_
 
 # Baseline training module
 python -m src.training.train_edge_baseline --train data/processed/splits/train_edges.csv --val data/processed/splits/val_edges.csv --test data/processed/splits/test_edges.csv --epochs 5 --device cuda
+
+# Full orchestration pipeline
+python -m src.pipeline.run_full_pipeline --epochs 5 --batch-size 512 --device cuda
+
+# Dashboard via Streamlit directly
+streamlit run dashboard/app.py
 ```
 
 ## Implementation Status

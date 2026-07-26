@@ -13,6 +13,7 @@ Date: March 2026
 """
 
 import argparse
+import subprocess
 import sys
 from pathlib import Path
 
@@ -25,6 +26,23 @@ from src.utils.service_config import (
     load_services_config,
     validate_enabled_services,
 )
+
+
+def _launch_dashboard() -> int:
+    """Launch the Streamlit dashboard in a subprocess."""
+    dashboard_path = Path("dashboard/app.py")
+    if not dashboard_path.exists():
+        print("Dashboard app file not found at dashboard/app.py")
+        return 1
+
+    command = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        str(dashboard_path),
+    ]
+    return subprocess.call(command)
 
 
 def main():
@@ -153,13 +171,8 @@ def main():
         
     elif args.mode == "dashboard":
         logger.info("Dashboard mode selected...")
-        dashboard_path = Path("dashboard/app.py")
-        if dashboard_path.exists():
-            logger.info("To launch dashboard, run:")
-        else:
-            logger.warning("Dashboard app file not found.")
-            logger.info("Create dashboard app at dashboard/app.py then run:")
-        logger.info("  streamlit run dashboard/app.py")
+        logger.info("Launching Streamlit dashboard...")
+        return _launch_dashboard()
     
     logger.info("")
     logger.success("Execution completed.")
