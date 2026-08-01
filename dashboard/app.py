@@ -44,8 +44,10 @@ def _display_value(value: object) -> str:
 
 graph_summary = _load_json("data/processed/graph_sanity_summary.json")
 metrics = _load_json("data/processed/metrics/baseline_metrics.json")
+temporal_metrics = _load_json("data/processed/metrics/temporal_gru_metrics.json")
 pipeline_report = _load_json("data/processed/reports/pipeline_run_report.json")
 scored = _load_csv("data/processed/inference/scored_edges.csv")
+temporal_scored = _load_csv("data/processed/inference/temporal_gru_scored_sequences.csv")
 
 with st.sidebar:
     st.header("Artifacts")
@@ -67,7 +69,7 @@ with top_row[0]:
         st.info("Run the pipeline first to generate graph summary.")
 
 with top_row[1]:
-    st.subheader("Validation")
+    st.subheader("Baseline Validation")
     if metrics and "validation" in metrics:
         val = metrics["validation"]
         st.metric("AUC", _fmt_float(val.get("auc")))
@@ -77,7 +79,17 @@ with top_row[1]:
         st.info("No validation metrics found yet.")
 
 with top_row[2]:
-    st.subheader("Test")
+    st.subheader("Temporal Validation")
+    if temporal_metrics and "validation" in temporal_metrics:
+        val = temporal_metrics["validation"]
+        st.metric("AUC", _fmt_float(val.get("auc")))
+        st.metric("F1", _fmt_float(val.get("f1")))
+        st.metric("Threshold", _fmt_float(val.get("best_threshold"), digits=2))
+    else:
+        st.info("No temporal metrics found yet.")
+
+with top_row[3]:
+    st.subheader("Baseline Test")
     if metrics and "test" in metrics:
         test = metrics["test"]
         st.metric("AUC", _fmt_float(test.get("auc")))
@@ -86,14 +98,25 @@ with top_row[2]:
     else:
         st.info("No test metrics found yet.")
 
-with top_row[3]:
+pipeline_row = st.columns(3)
+
+with pipeline_row[0]:
     st.subheader("Pipeline")
     if pipeline_report:
         st.metric("Has report", "Yes")
-        st.metric("Scored file", "Yes" if scored is not None else "No")
-        st.metric("Model ready", "Yes" if Path("models/edge_baseline.pt").exists() else "No")
+        st.metric("Baseline scored", "Yes" if scored is not None else "No")
     else:
         st.info("No pipeline run report found yet.")
+
+with pipeline_row[1]:
+    st.subheader("Baseline Model")
+    st.metric("Checkpoint", "Yes" if Path("models/edge_baseline.pt").exists() else "No")
+    st.metric("Metrics", "Yes" if metrics else "No")
+
+with pipeline_row[2]:
+    st.subheader("Temporal Model")
+    st.metric("Checkpoint", "Yes" if Path("models/temporal_edge_gru.pt").exists() else "No")
+    st.metric("Scored sequences", "Yes" if temporal_scored is not None else "No")
 
 st.divider()
 
@@ -134,7 +157,7 @@ with left_col:
                 barmode="group",
                 title="Validation/Test Metric Comparison",
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
     else:
         st.info("No metrics found yet.")
 
@@ -156,9 +179,21 @@ with right_col:
                 nbins=20,
                 title="Anomaly Probability Distribution",
             )
-            st.plotly_chart(score_fig, use_container_width=True)
+            st.plotly_chart(score_fig, width="stretch")
     else:
         st.info("No scored inference output found. Run: python -m src.pipeline.run_full_pipeline")
+
+    st.subheader("Temporal Scored Sequences")
+    if temporal_scored is not None and not temporal_scored.empty:
+        temporal_ranked = temporal_scored.sort_values("anomaly_probability", ascending=False)
+        temporal_threshold = float(
+            temporal_metrics.get("validation", {}).get("best_threshold", 0.5) if temporal_metrics else 0.5
+        )
+        temporal_min_prob = st.slider("Minimum temporal anomaly probability", 0.0, 1.0, temporal_threshold, 0.01)
+        temporal_display = temporal_ranked[temporal_ranked["anomaly_probability"] >= temporal_min_prob].head(200)
+        st.dataframe(temporal_display, width="stretch", height=260)
+    else:
+        st.info("No temporal scored output found. Run: python -m src.training.train_temporal_gru")
 
 st.divider()
 st.subheader("Runbook")
@@ -167,6 +202,7 @@ st.code(
         [
             "python -m src.pipeline.run_full_pipeline --epochs 3 --batch-size 512 --device cuda",
             "python -m src.training.train_edge_baseline --epochs 5 --device cuda",
+            "python -m src.training.train_temporal_gru --epochs 5 --device cuda",
             "python -m src.inference.score_edges --input data/processed/splits/test_edges.csv",
             "streamlit run dashboard/app.py",
         ]

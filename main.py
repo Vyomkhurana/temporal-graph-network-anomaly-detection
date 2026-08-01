@@ -19,6 +19,7 @@ from pathlib import Path
 
 from src.inference import score_edges
 from src.pipeline import run_full_pipeline
+from src.training.train_temporal_gru import train_temporal_gru
 from src.utils.config import load_config
 from src.utils.logger import setup_logger, get_logger
 from src.utils.service_config import (
@@ -57,9 +58,9 @@ def main():
     parser.add_argument(
         "--mode",
         type=str,
-        choices=["train", "infer", "dashboard"],
+        choices=["train", "train-temporal", "infer", "dashboard"],
         default="dashboard",
-        help="Operation mode: train (train model), infer (run inference), dashboard (launch UI)",
+        help="Operation mode: train (baseline pipeline), train-temporal (GRU), infer (run inference), dashboard (launch UI)",
     )
     
     parser.add_argument(
@@ -80,7 +81,7 @@ def main():
         "--epochs",
         type=int,
         default=5,
-        help="Training epochs for baseline model",
+        help="Training epochs for the selected model",
     )
 
     parser.add_argument(
@@ -88,6 +89,13 @@ def main():
         type=str,
         default="1h",
         help="Temporal aggregation window (e.g., 15min, 1h)",
+    )
+
+    parser.add_argument(
+        "--sequence-length",
+        type=int,
+        default=8,
+        help="Sequence length for the temporal GRU model",
     )
     
     args = parser.parse_args()
@@ -150,6 +158,23 @@ def main():
             logger.info(f"Inference output: {report['scored_inference_path']}")
         except Exception as exc:
             logger.error(f"Training pipeline failed: {exc}")
+            return 1
+
+    elif args.mode == "train-temporal":
+        logger.info("Temporal training mode selected...")
+        try:
+            train_temporal_gru(
+                train_path="data/processed/splits/train_edges.csv",
+                val_path="data/processed/splits/val_edges.csv",
+                test_path="data/processed/splits/test_edges.csv",
+                epochs=args.epochs,
+                device=config.get("system.device", "cpu") if config else "cpu",
+                seq_len=args.sequence_length,
+            )
+            logger.success("Temporal GRU training finished successfully")
+            logger.info("Temporal model artifacts were written to models/ and data/processed/")
+        except Exception as exc:
+            logger.error(f"Temporal training failed: {exc}")
             return 1
         
     elif args.mode == "infer":

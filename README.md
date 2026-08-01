@@ -18,10 +18,9 @@ A receptionist workstation initiating an SSH connection to a production database
 
 ## Technology Stack
 
-- **Python 3.9+**: Core programming language
+- **Python 3.11+**: Core programming language
 - **PyTorch**: Deep learning framework
-- **PyTorch Geometric**: Graph neural network library
-- **NetworkX**: Graph manipulation and analysis
+- **PyTorch Geometric**: Graph neural network library for future TGN expansion
 - **Pandas**: Data processing
 - **Streamlit**: Interactive dashboard
 - **Docker**: Containerization (optional)
@@ -142,13 +141,19 @@ This command will:
 python main.py --mode infer
 ```
 
-### 5. Launch Dashboard
+### 5. Train the Temporal GRU Model
+
+```bash
+python main.py --mode train-temporal --epochs 5 --sequence-length 8
+```
+
+### 6. Launch Dashboard
 
 ```bash
 python main.py --mode dashboard
 ```
 
-### 6. Useful Direct Commands
+### 7. Useful Direct Commands
 
 ```bash
 # Graph sanity check
@@ -156,6 +161,9 @@ python -m src.graph.run_graph_sanity_check --input data/processed/unsw_nb15_pyg_
 
 # Baseline training module
 python -m src.training.train_edge_baseline --train data/processed/splits/train_edges.csv --val data/processed/splits/val_edges.csv --test data/processed/splits/test_edges.csv --epochs 5 --device cuda
+
+# Temporal GRU training module
+python -m src.training.train_temporal_gru --train data/processed/splits/train_edges.csv --val data/processed/splits/val_edges.csv --test data/processed/splits/test_edges.csv --epochs 5 --device cuda --sequence-length 8
 
 # Full orchestration pipeline
 python -m src.pipeline.run_full_pipeline --epochs 5 --batch-size 512 --device cuda
@@ -179,6 +187,7 @@ streamlit run dashboard/app.py
 - [x] Inference scoring pipeline
 - [x] Streamlit operations dashboard
 - [x] End-to-end orchestrated offline pipeline
+- [x] Temporal GRU model path and scored temporal sequence output
 - [ ] Temporal Graph Neural Network (TGN) model replacement for baseline
 - [ ] Real-time streaming ingestion (Kafka)
 - [ ] Containerized deployment and CI/CD
